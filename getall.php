@@ -25,9 +25,6 @@ if($_GET['action']=='logout'){
 	//unset:销毁session的值
 	unset($_SESSION['admin']);
 	header("location:login.php");
-	/*echo "<pre>";
-	var_dump($_SESSION['admin']);
-	echo "</pre>";*/
 }
 //数据总条数
 $rowCount=$pdo->query("select * from member")->rowCount();
