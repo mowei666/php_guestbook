@@ -9,3 +9,4 @@ $pdo->query("set names utf8");
 error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
 //默认时区设置
 date_default_timezone_set("PRC");
+?>
