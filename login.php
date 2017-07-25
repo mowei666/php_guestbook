@@ -1,94 +1,104 @@
 <?php
-include 'common.php';
+include "common.php";
+/**
+ *@todo :一周内不用登录 
+ *   */
+//如果cookie有效，就跳转到首页，无需登录
+if($_COOKIE['username']){
+	//把cookie值保存到session中
+	$_SESSION['admin']=$_COOKIE['username'];
+	header("location:getall.php");
+}
+//点击登录
 if($_POST['send']){
-	/*echo ($_SESSION['captcha']);
-	echo $_POST['code'];*/
-	//判断用户输入的验证码是否正确
-	//strtolower();把字符串转换为小写
+	//判断验证码
 	if(strtolower($_POST['code'])!=strtolower($_SESSION['captcha'])){
-		echo "<script>alert('验证码不正确');location.href='login.php';</script>";
+		echo "<script>
+				alert('验证码错误');
+                location.href='login.php';
+              </script>";
 		return false;
 	}
-	//echo "1";
-	//根据用户名和密码设置查询语句
-	$sql="select   * 
-	      from     admin 
-	      where    admin_name='".$_POST['admin_name']."' 
-	      and      pwd='".md5($_POST['pwd'])."'";
+	//把用户名和密码在数据库中查询
+	$sql="select * 
+          from   admin 
+          where  username='".$_POST['username']."'
+          and    pwd='".md5($_POST['pwd'])."'";
 	//echo $sql;
-	//PDO执行查询sql语句,返回结果集
 	$result=$pdo->query($sql);
-	//从结果集中获取所有的数据
-	$data=$result->fetchAll(PDO::FETCH_OBJ);
-	//var_dump($data);
-	if($data[0]){
-		//把用户写入session
-		$_SESSION['admin']=$data[0];
-		//echo "ok";
+	$oneUser=$result->fetchAll(PDO::FETCH_OBJ);
+	//判断用户名是否存在;
+	if($oneUser[0]){
+		//一周内不用登录
+		if($_POST['oneweek']=="1"){
+			setcookie("username",$_POST['username'],time()+3600*24*7);
+		}else{
+			setcookie("username",$_POST['username']);
+		}
+		//跳转到首页
 		header("location:getall.php");
+		//把用户对象保存大session中
+		$_SESSION['admin']=$oneUser[0];
 	}else{
-		echo "<script>alert('用户名或密码错误');location.href='login.php';</script>";;
+		//弹出信息，并刷新页面
+		echo "<script>
+				alert('用户名或密码错误');
+                location.href='login.php';
+              </script>";
 	}
+	/* echo "<pre>";
+	var_dump($_POST);
+	echo "</pre>"; */
 }
 ?>
 <dl class="login">
 <form action="" method="post">
-	<dt>后台登录</dt>
-	<dd><input type="text" name="admin_name" placeholder="用户名"></dd>
-	<dd><input type="password" name="pwd" placeholder="密码"></dd>
-	<dd style="text-align:left">
-		<input type="text" name="code" style="width:80px;display:inline;margin-left:5px">
-		<img src="img.php" style="width:100px" class="captcha">
-		</dd>
-	<dd><input type="submit" name="send" class="submitBtn"></dd>
+	<dt>欢迎登录</dt>
+	<dd><input type="text" name="username" placeholder="用户名"></dd>
+	<dd><input type="text" name="pwd" placeholder="密码"></dd>
+	<dd>
+		<input type="text" name="code" class="code" placeholder="验证码">
+		<img src='captcha.php'>
+	</dd>
+	<dd>
+		<input type="checkbox" name="oneweek" class="oneweek" value="1">一周内不用登录
+	</dd>
+	<dd><input type="submit" name="send" value="登录" class="loginBtn"></dd>
 </form>
 </dl>
 <style>
-
+dl,dt,dd{
+	margin:0;
+	padding:0;
+}
 .login{
 	border:1px solid #ddd;
-	width:250px;
-	height:230px;
+	width:220px;
+	height:190px;
+	padding:5px;
 	position:absolute;
-	left:0;
-	right:0;
-	top:0;
-	bottom:0;
-	margin:auto;	
 }
 .login dt{
 	text-align:center;
-	margin:10px auto;
 }
 .login dd{
-	margin:10px auto;
+	margin:5px auto;
 }
 .login dd input{
-	width:95%;
-	border:1px solid #ddd;
-	display:block;
-	margin:auto;
-	font-size:14px;
-	padding:3px;
+	width:100%;
 }
-.submitBtn{
-	background:green;
-	color:#fff;
+/*优先级  */
+.login .code{
+	width:50px;
+}
+.login .oneweek{
+	width:20px;
 }
 </style>
+<script src="Tools.js"></script>
 <script>
-var captcha=document.querySelector(".captcha");
-captcha.addEventListener("click",function(){
-	this.src="img.php?num="+Math.random();
-});
+	center(document.querySelector(".login"));
 </script>
-
-
-
-
-
-
-
 
 
 
