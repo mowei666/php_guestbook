@@ -1,3 +1,4 @@
+# guestbook
 /*小于10的数字加0*/
 function addZero(num){
 	if(num<10){
